@@ -13,6 +13,7 @@ Where $F(x)$ is the output of the sequence of layers, and $x$ is the input to th
 Here, the word "residual" refers to the fact that the sequence of layers is learning the residual function $F(x)$, which is the difference between the desired output and the input. This allows the network to learn more effectively, as it can focus on learning the residuals rather than trying to learn the entire mapping from input to output.
 
 The gradient of the output with respect to the input can be expressed as:
+
 $$
 \frac{\partial y}{\partial x} = \frac{\partial F(x)}{\partial x} + 1
 $$
