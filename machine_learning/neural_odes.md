@@ -14,7 +14,15 @@ $$
 \frac{d\mathbf{h}}{dt} = f(h(t), t, \theta)
 $$
 
-> $\mathbf{h}(0)$ is the input layer, and $\mathbf{h}(T)$ is the output layer.
+Using the neural ODE framework, a neural network is used to find the function $f$ that determines the dynamics (or the velocity field) of the system. Then, the ODE relating the hidden state $\mathbf{h}$ with function $f$ is solved using an ODE solver (e.g., `torchdiffeq.odeint`) to compute the output $\mathbf{h}(T)$ from the input $\mathbf{h}(0)$.
+
+Inherently, ODE solver enforces the following:
+
+$$
+X(t_k) = X(0) + \int_{0}^{t_k} f(X(s), s, \theta) ds
+$$
+
+> $\mathbf{X}(0)$ is the input layer, and $\mathbf{X}(T)$ is the output layer.
 
 ## Advantages of Neural ODEs
 
@@ -25,26 +33,18 @@ According to the original paper:
 - **Continuous-Time Modeling**: Neural ODEs naturally model continuous-time processes, containing observations at *irregular* time intervals.
 - **Scalable and invertible normalizing flows**
 
-## Scope/Limitations of Neural ODEs
-
-According to the original paper:
-
-- **Minibatching**
-- **Unique Solutions**
-- **Manual tolerance Setting**
-- **Errors in the reconstruction of forward trajectories**
-
 ## Standard NN $\leftrightarrow$ Neural ODEs
 
-| Feature                | Standard NN                          | Neural ODEs                                                                         |
-| ---------------------- | ------------------------------------ | ----------------------------------------------------------------------------------- |
-| Depth                  | Number of layers                     | Integration time, number of function evaluations determined by the solver tolerance |
-| Continuity             | Discrete, $h_{t+1} = f(h_t, \theta)$ | Continuous, $\frac{dh}{dt} = f(h(t), t, \theta)$                                    |
-| Gradient               | Backpropagation through layers       | Adjoint method for gradient computation                                             |
-| Step size              | Fixed                                | Adaptive                                                                            |
-| Forward pass           | through layers                       | through ODE solver, Ex: using `torchdiffeq.odeint`                                  |
-| Memory cost            | $O(L)$                               | $O(1)$, just store the current state and the end points of the integration interval |
-| Function $\mathcal{N}$ | represents transformation            | $\mathcal{N}$ represents a veclocity field that defines the dynamics of the system  |
+| Feature                | Standard NN                                            | Neural ODEs                                                                             |
+| ---------------------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------- |
+| Depth                  | Number of layers                                       | Integration time, number of function evaluations determined by the solver tolerance     |
+| Continuity             | Discrete, $h_{t+1} = f(h_t, \theta)$                   | Continuous, $\frac{dh}{dt} = f(h(t), t, \theta)$                                        |
+| Gradient               | Backpropagation through layers                         | Adjoint method for gradient computation                                                 |
+| Step size              | Fixed                                                  | Adaptive                                                                                |
+| Forward pass           | through layers                                         | through ODE solver, Ex: using `torchdiffeq.odeint`                                      |
+| Backward pass          | through layers                                         | through ODE solver, using adjoint method                                                |
+| Memory cost            | $O(L)$                                                 | $O(1)$, it just stores the current state and the end points of the integration interval |
+| Function $\mathcal{f}$ | represents transformation mapping from input to output | veclocity field that defines the dynamics of the system                                 |
 
 ## A simple example of a Neural ODE
 
@@ -52,9 +52,9 @@ According to the original paper:
 
 Let's build a model that learns velocity field that governs the motion of points on a 2D curve such that the overall shape follows a specific geometric evolution. In this example, we will use a simple ellipse that expands and contracts over time, simulating a breathing motion whose aspect ratio changes according to the following function:
 
-```math
+$$
 \beta(t) = \beta_0 + \frac{1 - \beta_0 ^ 2}{\beta_{0} \sin{\omega T}} \sin(\omega t), \;\; t = 0, 1, ..., T
-```
+$$
 
 #### Assumptions
 
@@ -70,10 +70,18 @@ Let's build a model that learns velocity field that governs the motion of points
 - Conservation of topology (no crossing of trajectories)
 - Resolution invariance (the same curve should be obtained regardless of the number of points sampled on the curve)
 
-<details>
-<summary>Derivation of velocity field</summary>
+#### Implementation in PyTorch
 
-#### Mathematical Formulation
+- Define a neural network to find the function $f_{\theta}(X, t):\mathbb{R}^2 \times \mathbb{R} \rightarrow \mathbb{R}^2$, that determines the velocity field.
+- This leads to the ODE: $\frac{dX}{dt} = f_{\theta}(X, t)$, where $X$ is the set of points on the curve.
+- Use an ODE solver (e.g., `torchdiffeq.odeint`) to compute the output $X(T)$ from the input $X(0)$.
+- Loss function: Mean squared error between the predicted curve at time $T$ and the true curve at time $T$.
+
+$$
+\mathcal{L}(\theta) = \frac{1}{NK} \sum_{i=1}^{N} \sum_{k=1}^{K} \| X_i^{\theta}(t_k) - X_i^{\text{true}}(t_k) \|^2
+$$
+
+#### Appendix: Derivation of velocity field
 
 $$
 \dfrac{x^2}{a(t)^2} + \dfrac{y^2}{b(t)^2} = 1 \\
@@ -120,23 +128,20 @@ $$
 \Rightarrow \frac{dy}{dt} = -\frac{y}{2} \frac{\beta'(t)}{\beta(t)}
 $$
 
-Letting $\alpha(t) = \frac{\beta'(t)}{2\beta(t)}$,
+Hence, the velocity field governing the motion of points on the curve can be expressed as:
 
 $$
 \frac{d}{dt} \begin{pmatrix} x \\ y \end{pmatrix} = \alpha(t) \begin{pmatrix} x \\ -y \end{pmatrix} = \frac{\beta'(t)}{2\beta(t)} \begin{pmatrix} x \\ -y \end{pmatrix}
 $$
 
-Now using the definition of $\beta(t)$, we can compute $\alpha(t)$:
-
-$$
-\beta(t) = \beta_0 + \frac{1 - \beta_0 ^ 2}{\beta_{0} \sin{\omega T}} \sin(\omega t) \\
-\Rightarrow \beta'(t) = \frac{1 - \beta_0 ^ 2}{\beta_{0} \sin{\omega T}} \omega \cos(\omega t) \\
-\Rightarrow \alpha(t) = \frac{\beta'(t)}{2\beta(t)} = \frac{1 - \beta_0 ^ 2}{2\beta_{0} \sin{\omega T}} \frac{\omega \cos(\omega t)}{\beta_0 + \frac{1 - \beta_0 ^ 2}{\beta_{0} \sin{\omega T}} \sin(\omega t)} \\
-$$
 
 The neural ODE should learn this time-varying velocity field that governs the motion of points on the curve, allowing it to reconstruct the breathing ellipse dynamics from the observed data.
 
-</details>
+## Scope/Limitations of Neural ODEs
 
-#### Implementation in PyTorch
+According to the original paper:
 
+- **Minibatching**
+- **Unique Solutions**
+- **Manual tolerance Setting**
+- **Errors in the reconstruction of forward trajectories**
