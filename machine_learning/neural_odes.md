@@ -5,16 +5,16 @@ Neural Ordinary Differential Equations (Neural ODEs) introduced by [Chen et al.]
 In a standard neural network, the hidden state is represented as a discrete sequence of layers as shown below. These updates are like Euler's discretization of a continuous transformation.
 
 $$
-\mathbf{h}_{t+1} = \mathbf{h}_t + f(\mathbf{h}_t, \theta_t); \;\; t = 0, 1, ..., T
+\boldsymbol{h}_{t+1} = \boldsymbol{h}_t + f(\boldsymbol{h}_t, \theta_t); \;\; t = 0, 1, ..., T
 $$
 
 In the limit as the step size goes to zero, this can be represented as a continuous transformation of the hidden state:
 
 $$
-\frac{d\mathbf{h}}{dt} = f(h(t), t, \theta)
+\frac{d\boldsymbol{h}}{dt} = f(h(t), t, \theta)
 $$
 
-Using the neural ODE framework, a neural network is used to find the function $f$ that determines the dynamics (or the velocity field) of the system. Then, the ODE relating the hidden state $\mathbf{h}$ with function $f$ is solved using an ODE solver (e.g., `torchdiffeq.odeint`) to compute the output $\mathbf{h}(T)$ from the input $\mathbf{h}(0)$.
+Using the neural ODE framework, a neural network is used to find the function $f$ that determines the dynamics (or the velocity field) of the system. Then, the ODE relating the hidden state $\boldsymbol{h}$ with function $f$ is solved using an ODE solver (e.g., `torchdiffeq.odeint`) to compute the output $\boldsymbol{h}(T)$ from the input $\boldsymbol{h}(0)$.
 
 Inherently, ODE solver enforces the following:
 
@@ -22,7 +22,7 @@ $$
 X(t_k) = X(0) + \int_{0}^{t_k} f(X(s), s, \theta) ds
 $$
 
-> $\mathbf{X}(0)$ is the input layer, and $\mathbf{X}(T)$ is the output layer.
+> $\boldsymbol{X}(0)$ is the input layer, and $\boldsymbol{X}(T)$ is the output layer.
 
 ## Advantages of Neural ODEs
 
@@ -52,9 +52,9 @@ According to the original paper:
 
 Let's build a model that learns velocity field that governs the motion of points on a 2D curve such that the overall shape follows a specific geometric evolution. In this example, we will use a simple ellipse that expands and contracts over time, simulating a breathing motion whose aspect ratio changes according to the following function:
 
-$$
+```math
 \beta(t) = \beta_0 + \frac{1 - \beta_0 ^ 2}{\beta_{0} \sin{\omega T}} \sin(\omega t), \;\; t = 0, 1, ..., T
-$$
+```
 
 #### Assumptions
 
@@ -77,63 +77,73 @@ $$
 - Use an ODE solver (e.g., `torchdiffeq.odeint`) to compute the output $X(T)$ from the input $X(0)$.
 - Loss function: Mean squared error between the predicted curve at time $T$ and the true curve at time $T$.
 
-$$
+```math
 \mathcal{L}(\theta) = \frac{1}{NK} \sum_{i=1}^{N} \sum_{k=1}^{K} \| X_i^{\theta}(t_k) - X_i^{\text{true}}(t_k) \|^2
-$$
+```
 
 #### Appendix: Derivation of velocity field
 
-$$
+```math
 \dfrac{x^2}{a(t)^2} + \dfrac{y^2}{b(t)^2} = 1 \\
-$$
+```
 
 Assuming the ellipse is centered at the origin, parametrized by the angle $\theta \in [0, 2\pi)$, the coordinates of points on the ellipse can be expressed as:
 
-$$
+```math
 x(t, \theta) = a(t) \cos{\theta} \\
 y(t, \theta) = b(t) \sin{\theta}
-$$
+```
 
 Where $a(t)$ and $b(t)$ are the semi-major and semi-minor axes of the ellipse at time $t$. The aspect ratio $\beta(t)$ is defined as:
 
-$$
+```math
 \beta(t) = \frac{a(t)}{b(t)} \\
 \beta(0) = \beta_0 \\
 \beta(T) = \frac{1}{\beta_0}
-$$
+```
 
 As the area of the ellipse is conserved, we have:
 
-$$
-A = \pi a(t) b(t) = \text{constant} \\
-\Rightarrow a(t) b(t) = A / \pi = \xi ^ 2 \\
-\Rightarrow a(t) = \xi \sqrt{\beta(t)} \\
-\Rightarrow b(t) = \frac{\xi}{\sqrt{\beta(t)}} \\
-\;\\
-x(t, \theta) = \xi \sqrt{\beta(t)} \cos{\theta} \\
-y(t, \theta) = \frac{\xi}{\sqrt{\beta(t)}} \sin{\theta} \\
-$$
+```math
+\begin{align*}
+A &= \pi a(t) b(t) = \text{constant} \\
+\Rightarrow a(t) b(t) &= A / \pi = \xi ^ 2 \\
+\Rightarrow a(t) &= \xi \sqrt{\beta(t)} \\
+\Rightarrow b(t) &= \frac{\xi}{\sqrt{\beta(t)}} \\
+x(t, \theta) &= \xi \sqrt{\beta(t)} \cos{\theta} \\
+y(t, \theta) &= \frac{\xi}{\sqrt{\beta(t)}} \sin{\theta} \\
+\end{align*}
+```
 
 Differentiating the coordinates with respect to time to get the velocity field:
 
-$$
-\frac{dx}{dt} = \frac{d}{dt} (\xi \sqrt{\beta(t)} \cos{\theta}) = \xi \cos{\theta} \frac{d}{dt} \sqrt{\beta(t)} = \frac{\xi}{2} \cos{\theta} \frac{\beta'(t)}{\sqrt{\beta(t)}} \\
-\Rightarrow \frac{dx}{dt} = \frac{x}{2} \frac{\beta'(t)}{\beta(t)} \\
-$$
+```math
+\begin{align*}
+\frac{dx}{dt} &= \frac{d}{dt} (\xi \sqrt{\beta(t)} \cos{\theta}) \\
+&= \xi \cos{\theta} \frac{d}{dt} \sqrt{\beta(t)} \\
+&= \frac{\xi}{2} \cos{\theta} \frac{\beta'(t)}{\sqrt{\beta(t)}} \\
+\Rightarrow \frac{dx}{dt} &= \frac{x}{2} \frac{\beta'(t)}{\beta(t)} \\
+\end{align*}
+```
 
 Similarly for $y$:
 
-$$
-\frac{dy}{dt} = \frac{d}{dt} \left( \frac{\xi}{\sqrt{\beta(t)}} \sin{\theta} \right) = -\frac{\xi}{2} \sin{\theta} \frac{\beta'(t)}{\beta(t)\sqrt{\beta(t)}} \\
-\Rightarrow \frac{dy}{dt} = -\frac{y}{2} \frac{\beta'(t)}{\beta(t)}
-$$
+```math
+\begin{align*}
+\frac{dy}{dt} &= \frac{d}{dt} \left( \frac{\xi}{\sqrt{\beta(t)}} \sin{\theta} \right) \\
+&= -\frac{\xi}{2} \sin{\theta} \frac{\beta'(t)}{\beta(t)\sqrt{\beta(t)}} \\
+\Rightarrow \frac{dy}{dt} &= -\frac{y}{2} \frac{\beta'(t)}{\beta(t)}
+\end{align*}
+```
 
 Hence, the velocity field governing the motion of points on the curve can be expressed as:
 
-$$
-\frac{d}{dt} \begin{pmatrix} x \\ y \end{pmatrix} = \alpha(t) \begin{pmatrix} x \\ -y \end{pmatrix} = \frac{\beta'(t)}{2\beta(t)} \begin{pmatrix} x \\ -y \end{pmatrix}
-$$
-
+```math
+\begin{align*}
+\frac{d}{dt} \begin{pmatrix} x \\ y \end{pmatrix} &= \alpha(t) \begin{pmatrix} x \\ -y \end{pmatrix} \\
+&= \frac{\beta'(t)}{2\beta(t)} \begin{pmatrix} x \\ -y \end{pmatrix}
+\end{align*}
+```
 
 The neural ODE should learn this time-varying velocity field that governs the motion of points on the curve, allowing it to reconstruct the breathing ellipse dynamics from the observed data.
 
