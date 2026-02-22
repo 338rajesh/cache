@@ -5,16 +5,16 @@ Neural Ordinary Differential Equations (Neural ODEs) introduced by [Chen et al.]
 In a standard neural network, the hidden state is represented as a discrete sequence of layers as shown below. These updates are like Euler's discretization of a continuous transformation.
 
 $$
-\bm{h}_{t+1} = \bm{h}_t + f(\bm{h}_t, \theta_t); \;\; t = 0, 1, ..., T
+\mathbf{h}_{t+1} = \mathbf{h}_t + f(\mathbf{h}_t, \theta_t); \;\; t = 0, 1, ..., T
 $$
 
 In the limit as the step size goes to zero, this can be represented as a continuous transformation of the hidden state:
 
 $$
-\frac{d\bm{h}}{dt} = f(h(t), t, \theta)
+\frac{d\mathbf{h}}{dt} = f(h(t), t, \theta)
 $$
 
-> $\bm{h}(0)$ is the input layer, and $\bm{h}(T)$ is the output layer.
+> $\mathbf{h}(0)$ is the input layer, and $\mathbf{h}(T)$ is the output layer.
 
 ## Advantages of Neural ODEs
 
@@ -50,22 +50,94 @@ According to the original paper:
 
 ### Breathing Ellipse Example
 
-Let's build a model that learns velocity field that governs the motion of points on a 2D curve such that the overall shape follows a specific geometric evolution. In this example, we will use a simple ellipse that expands and contracts over time, simulating a breathing motion.
+Let's build a model that learns velocity field that governs the motion of points on a 2D curve such that the overall shape follows a specific geometric evolution. In this example, we will use a simple ellipse that expands and contracts over time, simulating a breathing motion whose aspect ratio changes according to the following function:
+
+```math
+\beta(t) = \beta_0 + \frac{1 - \beta_0 ^ 2}{\beta_{0} \sin{\omega T}} \sin(\omega t), \;\; t = 0, 1, ..., T
+```
 
 #### Assumptions
 
-- Initial state ($t=0$): An ellipse with aspect ratio $\beta_0$
-- Dynamics: The aspect ratio $\beta(t)$ changes over time according to a simple sinusoidal function, simulating the breathing motion.
-- Intermediate state: At some $t_c$, the aspect ratio becomes unity, resulting in a circle.
-- Final state ($t=T$): The ellipse reaches opposite aspect ratio $\beta_T = 1/\beta_0$.
-- Each point on the curve must be mapped to a new position at each time step, following the velocity field defined by the Neural ODE.
-
-#### Mathematical Formulation
-
-Todo
+- **Initial state** ($t=0$): An ellipse with aspect ratio $\beta_0$
+- **Intermediate states**: We have the observations of the curve at different time steps, possibly at irregular intervals. We want to learn the underlying velocity field that governs this motion.
+- **Final state** ($t=T$): The ellipse reaches opposite aspect ratio $\beta_T = 1/\beta_0$.
+- The area of the ellipse is conserved over time.
+- Each point on the curve maps to a new position at each time step, following the velocity field defined by the Neural ODE.
 
 #### Expected Results
 
-- Non-autonomous vector field
+- Non-autonomous vector field (explicit time dependence) that governs the motion of points on the curve.
 - Conservation of topology (no crossing of trajectories)
 - Resolution invariance (the same curve should be obtained regardless of the number of points sampled on the curve)
+
+<details>
+<summary>Derivation of velocity field</summary>
+
+#### Mathematical Formulation
+
+```math
+\dfrac{x^2}{a(t)^2} + \dfrac{y^2}{b(t)^2} = 1 \\
+```
+
+Assuming the ellipse is centered at the origin, parametrized by the angle $\theta \in [0, 2\pi)$, the coordinates of points on the ellipse can be expressed as:
+
+```math
+x(t, \theta) = a(t) \cos{\theta} \\
+y(t, \theta) = b(t) \sin{\theta}
+```
+
+Where $a(t)$ and $b(t)$ are the semi-major and semi-minor axes of the ellipse at time $t$. The aspect ratio $\beta(t)$ is defined as:
+
+```math
+\beta(t) = \frac{a(t)}{b(t)} \\
+\beta(0) = \beta_0 \\
+\beta(T) = \frac{1}{\beta_0}
+```
+
+As the area of the ellipse is conserved, we have:
+
+```math
+A = \pi a(t) b(t) = \text{constant} \\
+\Rightarrow a(t) b(t) = A / \pi = \xi ^ 2 \\
+\Rightarrow a(t) = \xi \sqrt{\beta(t)} \\
+\Rightarrow b(t) = \frac{\xi}{\sqrt{\beta(t)}} \\
+\;\\
+x(t, \theta) = \xi \sqrt{\beta(t)} \cos{\theta} \\
+y(t, \theta) = \frac{\xi}{\sqrt{\beta(t)}} \sin{\theta} \\
+```
+
+Differentiating the coordinates with respect to time to get the velocity field:
+
+```math
+\frac{dx}{dt} = \frac{d}{dt} (\xi \sqrt{\beta(t)} \cos{\theta}) = \xi \cos{\theta} \frac{d}{dt} \sqrt{\beta(t)} = \frac{\xi}{2} \cos{\theta} \frac{\beta'(t)}{\sqrt{\beta(t)}} \\
+\Rightarrow \frac{dx}{dt} = \frac{x}{2} \frac{\beta'(t)}{\beta(t)} \\
+```
+
+Similarly for $y$:
+
+```math
+\frac{dy}{dt} = \frac{d}{dt} \left( \frac{\xi}{\sqrt{\beta(t)}} \sin{\theta} \right) = -\frac{\xi}{2} \sin{\theta} \frac{\beta'(t)}{\beta(t)\sqrt{\beta(t)}} \\
+\Rightarrow \frac{dy}{dt} = -\frac{y}{2} \frac{\beta'(t)}{\beta(t)}
+```
+
+Letting $\alpha(t) = \frac{\beta'(t)}{2\beta(t)}$,
+
+```math
+\frac{d}{dt} \begin{pmatrix} x \\ y \end{pmatrix} = \alpha(t) \begin{pmatrix} x \\ -y \end{pmatrix} = \frac{\beta'(t)}{2\beta(t)} \begin{pmatrix} x \\ -y \end{pmatrix}
+```
+
+Now using the definition of $\beta(t)$, we can compute $\alpha(t)$:
+
+```math
+\beta(t) = \beta_0 + \frac{1 - \beta_0 ^ 2}{\beta_{0} \sin{\omega T}} \sin(\omega t) \\
+\Rightarrow \beta'(t) = \frac{1 - \beta_0 ^ 2}{\beta_{0} \sin{\omega T}} \omega \cos(\omega t) \\
+\Rightarrow \alpha(t) = \frac{\beta'(t)}{2\beta(t)} = \frac{1 - \beta_0 ^ 2}{2\beta_{0} \sin{\omega T}} \frac{\omega \cos(\omega t)}{\beta_0 + \frac{1 - \beta_0 ^ 2}{\beta_{0} \sin{\omega T}} \sin(\omega t)} \\
+
+```
+
+The neural ODE should learn this time-varying velocity field that governs the motion of points on the curve, allowing it to reconstruct the breathing ellipse dynamics from the observed data.
+
+</details>
+
+#### Implementation in PyTorch
+
