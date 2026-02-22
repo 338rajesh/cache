@@ -75,28 +75,28 @@ Let's build a model that learns velocity field that governs the motion of points
 
 #### Mathematical Formulation
 
-```math
+$$
 \dfrac{x^2}{a(t)^2} + \dfrac{y^2}{b(t)^2} = 1 \\
-```
+$$
 
 Assuming the ellipse is centered at the origin, parametrized by the angle $\theta \in [0, 2\pi)$, the coordinates of points on the ellipse can be expressed as:
 
-```math
+$$
 x(t, \theta) = a(t) \cos{\theta} \\
 y(t, \theta) = b(t) \sin{\theta}
-```
+$$
 
 Where $a(t)$ and $b(t)$ are the semi-major and semi-minor axes of the ellipse at time $t$. The aspect ratio $\beta(t)$ is defined as:
 
-```math
+$$
 \beta(t) = \frac{a(t)}{b(t)} \\
 \beta(0) = \beta_0 \\
 \beta(T) = \frac{1}{\beta_0}
-```
+$$
 
 As the area of the ellipse is conserved, we have:
 
-```math
+$$
 A = \pi a(t) b(t) = \text{constant} \\
 \Rightarrow a(t) b(t) = A / \pi = \xi ^ 2 \\
 \Rightarrow a(t) = \xi \sqrt{\beta(t)} \\
@@ -104,36 +104,35 @@ A = \pi a(t) b(t) = \text{constant} \\
 \;\\
 x(t, \theta) = \xi \sqrt{\beta(t)} \cos{\theta} \\
 y(t, \theta) = \frac{\xi}{\sqrt{\beta(t)}} \sin{\theta} \\
-```
+$$
 
 Differentiating the coordinates with respect to time to get the velocity field:
 
-```math
+$$
 \frac{dx}{dt} = \frac{d}{dt} (\xi \sqrt{\beta(t)} \cos{\theta}) = \xi \cos{\theta} \frac{d}{dt} \sqrt{\beta(t)} = \frac{\xi}{2} \cos{\theta} \frac{\beta'(t)}{\sqrt{\beta(t)}} \\
 \Rightarrow \frac{dx}{dt} = \frac{x}{2} \frac{\beta'(t)}{\beta(t)} \\
-```
+$$
 
 Similarly for $y$:
 
-```math
+$$
 \frac{dy}{dt} = \frac{d}{dt} \left( \frac{\xi}{\sqrt{\beta(t)}} \sin{\theta} \right) = -\frac{\xi}{2} \sin{\theta} \frac{\beta'(t)}{\beta(t)\sqrt{\beta(t)}} \\
 \Rightarrow \frac{dy}{dt} = -\frac{y}{2} \frac{\beta'(t)}{\beta(t)}
-```
+$$
 
 Letting $\alpha(t) = \frac{\beta'(t)}{2\beta(t)}$,
 
-```math
+$$
 \frac{d}{dt} \begin{pmatrix} x \\ y \end{pmatrix} = \alpha(t) \begin{pmatrix} x \\ -y \end{pmatrix} = \frac{\beta'(t)}{2\beta(t)} \begin{pmatrix} x \\ -y \end{pmatrix}
-```
+$$
 
 Now using the definition of $\beta(t)$, we can compute $\alpha(t)$:
 
-```math
+$$
 \beta(t) = \beta_0 + \frac{1 - \beta_0 ^ 2}{\beta_{0} \sin{\omega T}} \sin(\omega t) \\
 \Rightarrow \beta'(t) = \frac{1 - \beta_0 ^ 2}{\beta_{0} \sin{\omega T}} \omega \cos(\omega t) \\
 \Rightarrow \alpha(t) = \frac{\beta'(t)}{2\beta(t)} = \frac{1 - \beta_0 ^ 2}{2\beta_{0} \sin{\omega T}} \frac{\omega \cos(\omega t)}{\beta_0 + \frac{1 - \beta_0 ^ 2}{\beta_{0} \sin{\omega T}} \sin(\omega t)} \\
-
-```
+$$
 
 The neural ODE should learn this time-varying velocity field that governs the motion of points on the curve, allowing it to reconstruct the breathing ellipse dynamics from the observed data.
 
