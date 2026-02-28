@@ -1,5 +1,7 @@
 # Cache
 
+[![pages-build-deployment](https://github.com/338rajesh/cache/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/338rajesh/cache/actions/workflows/pages/pages-build-deployment)
+
 This repository is used as a cache to store notes I have written or collected. These notes are typically prepared after reading new manuscripts, after completion of some technical courses, and after exploratory studies.
 
 > [!WARNING]

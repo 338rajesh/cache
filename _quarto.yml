@@ -1,0 +1,32 @@
+project:
+  type: website
+  output-dir: _site
+
+execute:
+  freeze: auto
+
+
+website:
+  title: "cache!"
+  
+  # Top navigation bar
+  navbar:
+    left:
+      - href: index.md
+        text: Home
+      - href: https://338rajesh.github.io/
+        text: About
+
+  # Side navigation (Great for many notes)
+  sidebar:
+    style: "docked"
+    search: true            # This adds a search bar automatically!
+    contents:
+      - section: "Machine Learning"
+        contents:
+          - src/machine_learning/resnet.md
+          - src/machine_learning/neural_odes.md
+      - section: "Uncertainty Quantifcation"
+        contents:
+          - src/uq/mcmc.md
+      - notes.md
