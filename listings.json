@@ -1,0 +1,10 @@
+[
+  {
+    "listing": "/notes.html",
+    "items": [
+      "/src/machine_learning/neural_odes.html",
+      "/src/machine_learning/resnet.html",
+      "/src/uq/mcmc.html"
+    ]
+  }
+]

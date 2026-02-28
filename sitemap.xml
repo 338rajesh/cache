@@ -1,15 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://338rajesh.github.io/cache/uq_uncertainty_quantifiction/mcmc.html</loc>
-    <lastmod>2026-02-28T14:54:59.994Z</lastmod>
+    <loc>https://338rajesh.github.io/cache/src/uq/mcmc.html</loc>
+    <lastmod>2026-02-28T15:50:50.735Z</lastmod>
   </url>
   <url>
-    <loc>https://338rajesh.github.io/cache/machine_learning/resnet.html</loc>
-    <lastmod>2026-02-28T14:54:59.975Z</lastmod>
+    <loc>https://338rajesh.github.io/cache/src/machine_learning/neural_odes.html</loc>
+    <lastmod>2026-02-28T15:50:50.735Z</lastmod>
   </url>
   <url>
-    <loc>https://338rajesh.github.io/cache/machine_learning/neural_odes.html</loc>
-    <lastmod>2026-02-28T14:54:59.985Z</lastmod>
+    <loc>https://338rajesh.github.io/cache/index.html</loc>
+    <lastmod>2026-02-28T15:50:50.734Z</lastmod>
+  </url>
+  <url>
+    <loc>https://338rajesh.github.io/cache/notes.html</loc>
+    <lastmod>2026-02-28T15:50:50.734Z</lastmod>
+  </url>
+  <url>
+    <loc>https://338rajesh.github.io/cache/src/machine_learning/resnet.html</loc>
+    <lastmod>2026-02-28T15:50:50.735Z</lastmod>
   </url>
 </urlset>
