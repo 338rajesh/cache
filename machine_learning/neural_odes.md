@@ -53,7 +53,7 @@ According to the original paper:
 Let's build a model that learns velocity field that governs the motion of points on a 2D curve such that the overall shape follows a specific geometric evolution. In this example, we will use a simple ellipse that expands and contracts over time, simulating a breathing motion whose aspect ratio changes according to the following function:
 
 ```math
-\beta(t) = \beta_0 + \frac{1 - \beta_0 ^ 2}{\beta_{0} \sin{\omega T}} \sin(\omega t), \;\; t = 0, 1, ..., T
+\beta(t) = \frac{1}{2}\left[(\beta_0 + \frac{1}{\beta_0}) + (\beta_0 - \frac{1}{\beta_0})\cos(\frac{\pi t}{T}) \right]; \quad t = 0, 1, ..., T \\
 ```
 
 #### Assumptions
