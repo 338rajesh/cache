@@ -5,6 +5,13 @@ project:
 execute:
   freeze: auto
 
+format:
+  html:
+    toc: true
+    toc-location: right
+    theme:
+      light: flatly
+      dark: darkly
 
 website:
   title: "cache!"
@@ -23,10 +30,7 @@ website:
     search: true            # This adds a search bar automatically!
     contents:
       - section: "Machine Learning"
-        contents:
-          - src/machine_learning/resnet.md
-          - src/machine_learning/neural_odes.md
+        contents: src/machine_learning/*
       - section: "Uncertainty Quantifcation"
-        contents:
-          - src/uq/mcmc.md
+        contents: src/uq/*
       - notes.md
