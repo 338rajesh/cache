@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>resnet – cache!</title>
+<title>markov_chains – cache!</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -73,35 +73,6 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
-  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
-
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
 
 </head>
 
@@ -304,7 +275,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../src/machine_learning/breathing_ellipse.html">Machine Learning</a></li><li class="breadcrumb-item"><a href="../../src/machine_learning/resnet.html">Residual network block</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../src/uq/markov_chains.html">Uncertainty Quantifcation</a></li><li class="breadcrumb-item"><a href="../../src/uq/markov_chains.html">Markov Chains</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -347,7 +318,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../src/machine_learning/resnet.html" class="sidebar-item-text sidebar-link active">
+  <a href="../../src/machine_learning/resnet.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Residual network block</span></a>
   </div>
 </li>
@@ -364,7 +335,7 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../src/uq/markov_chains.html" class="sidebar-item-text sidebar-link">
+  <a href="../../src/uq/markov_chains.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Markov Chains</span></a>
   </div>
 </li>
@@ -392,33 +363,34 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#residual-network-block" id="toc-residual-network-block" class="nav-link active" data-scroll-target="#residual-network-block">Residual network block</a></li>
+  <li><a href="#markov-chains" id="toc-markov-chains" class="nav-link active" data-scroll-target="#markov-chains">Markov Chains</a>
+  <ul class="collapse">
+  <li><a href="#terminology" id="toc-terminology" class="nav-link" data-scroll-target="#terminology">Terminology</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../src/machine_learning/breathing_ellipse.html">Machine Learning</a></li><li class="breadcrumb-item"><a href="../../src/machine_learning/resnet.html">Residual network block</a></li></ol></nav></header>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../src/uq/markov_chains.html">Uncertainty Quantifcation</a></li><li class="breadcrumb-item"><a href="../../src/uq/markov_chains.html">Markov Chains</a></li></ol></nav></header>
 
 
 
 
 
-<section id="residual-network-block" class="level1">
-<h1>Residual network block</h1>
-<p>Resnet block adds a skip connection to the output of a sequence of neural network layers, designed for addressing the vanishing gradient problem in deep neural networks.</p>
-<p>The Resnet block can be represented mathematically as:</p>
-<p><span class="math display">\[
-y = F(x) + x
-\]</span></p>
-<p>Where <span class="math inline">\(F(x)\)</span> is the output of the sequence of layers, and <span class="math inline">\(x\)</span> is the input to those layers. If there is a need to learn a more complex function, <span class="math inline">\(F(x)\)</span> will capture that complexity. If not, <span class="math inline">\(F(x)\)</span> can be zero, and the output will simply be the input <span class="math inline">\(x\)</span>, allowing for an identity mapping.</p>
-<p>Here, the word “residual” refers to the fact that the sequence of layers is learning the residual function <span class="math inline">\(F(x)\)</span>, which is the difference between the desired output and the input. This allows the network to learn more effectively, as it can focus on learning the residuals rather than trying to learn the entire mapping from input to output.</p>
-<p>The gradient of the output with respect to the input can be expressed as:</p>
-<p><span class="math display">\[
-\frac{\partial y}{\partial x} = \frac{\partial F(x)}{\partial x} + 1
-\]</span></p>
-<p>In some cases, the function <span class="math inline">\(F(x)\)</span> may be very small, leading to very small gradients. Here, however the <code>+1</code> term ensures becomes the bridge that allows the gradient to flow through the network, even when <span class="math inline">\(F(x)\)</span> is small. This is one of the key reasons why Resnet blocks help mitigate the vanishing gradient problem in deep neural networks. Allowing smaller changes with <span class="math inline">\(F(x)\)</span>, while still maintaining a strong gradient flow through the skip connection, enables feature refinement and learning in deeper networks.</p>
+<section id="markov-chains" class="level1">
+<h1>Markov Chains</h1>
+<p>“<em>Future state depends on the current state, not the past states</em>”</p>
+<section id="terminology" class="level2">
+<h2 class="anchored" data-anchor-id="terminology">Terminology</h2>
+<ul>
+<li><strong>State space</strong>: The set of all possible states that the system can be in.</li>
+<li><strong>Transition probability</strong>: The probability of moving from one state to another in a single time step.</li>
+<li><strong>Transition matrix</strong>: A matrix that contains the transition probabilities between all pairs of states.</li>
+<li><strong>Stationary distribution</strong>: A probability distribution that remains unchanged as the system evolves over time.</li>
+</ul>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->

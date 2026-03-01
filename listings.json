@@ -3,8 +3,10 @@
     "listing": "/notes.html",
     "items": [
       "/src/machine_learning/neural_odes.html",
+      "/src/machine_learning/breathing_ellipse.html",
       "/src/machine_learning/resnet.html",
-      "/src/uq/mcmc.html"
+      "/src/uq/mcmc.html",
+      "/src/uq/markov_chains.html"
     ]
   }
 ]

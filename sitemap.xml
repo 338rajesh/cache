@@ -1,23 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://338rajesh.github.io/cache/src/uq/mcmc.html</loc>
-    <lastmod>2026-02-28T15:50:50.735Z</lastmod>
-  </url>
-  <url>
-    <loc>https://338rajesh.github.io/cache/src/machine_learning/neural_odes.html</loc>
-    <lastmod>2026-02-28T15:50:50.735Z</lastmod>
-  </url>
-  <url>
-    <loc>https://338rajesh.github.io/cache/index.html</loc>
-    <lastmod>2026-02-28T15:50:50.734Z</lastmod>
-  </url>
-  <url>
-    <loc>https://338rajesh.github.io/cache/notes.html</loc>
-    <lastmod>2026-02-28T15:50:50.734Z</lastmod>
+    <loc>https://338rajesh.github.io/cache/src/uq/markov_chains.html</loc>
+    <lastmod>2026-03-01T17:35:16.882Z</lastmod>
   </url>
   <url>
     <loc>https://338rajesh.github.io/cache/src/machine_learning/resnet.html</loc>
-    <lastmod>2026-02-28T15:50:50.735Z</lastmod>
+    <lastmod>2026-03-01T17:35:16.882Z</lastmod>
+  </url>
+  <url>
+    <loc>https://338rajesh.github.io/cache/src/machine_learning/neural_odes.html</loc>
+    <lastmod>2026-03-01T17:35:16.882Z</lastmod>
+  </url>
+  <url>
+    <loc>https://338rajesh.github.io/cache/index.html</loc>
+    <lastmod>2026-03-01T17:35:16.879Z</lastmod>
+  </url>
+  <url>
+    <loc>https://338rajesh.github.io/cache/notes.html</loc>
+    <lastmod>2026-03-01T17:35:16.879Z</lastmod>
+  </url>
+  <url>
+    <loc>https://338rajesh.github.io/cache/src/machine_learning/breathing_ellipse.html</loc>
+    <lastmod>2026-03-01T17:35:16.880Z</lastmod>
+  </url>
+  <url>
+    <loc>https://338rajesh.github.io/cache/src/uq/mcmc.html</loc>
+    <lastmod>2026-03-01T17:35:16.882Z</lastmod>
   </url>
 </urlset>
