@@ -347,6 +347,12 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../../src/machine_learning/quadtree_compression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Synthetic Image Compression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../../src/machine_learning/resnet.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Residual network block</span></a>
   </div>
@@ -396,10 +402,7 @@ window.Quarto = {
   <ul class="collapse">
   <li><a href="#advantages-of-neural-odes" id="toc-advantages-of-neural-odes" class="nav-link" data-scroll-target="#advantages-of-neural-odes">Advantages of Neural ODEs</a></li>
   <li><a href="#standard-nn-leftrightarrow-neural-odes" id="toc-standard-nn-leftrightarrow-neural-odes" class="nav-link" data-scroll-target="#standard-nn-leftrightarrow-neural-odes">Standard NN <span class="math inline">\(\leftrightarrow\)</span> Neural ODEs</a></li>
-  <li><a href="#a-simple-example-of-a-neural-ode" id="toc-a-simple-example-of-a-neural-ode" class="nav-link" data-scroll-target="#a-simple-example-of-a-neural-ode">A simple example of a Neural ODE</a>
-  <ul class="collapse">
-  <li><a href="#breathing-ellipse-example" id="toc-breathing-ellipse-example" class="nav-link" data-scroll-target="#breathing-ellipse-example">Breathing Ellipse Example</a></li>
-  </ul></li>
+  <li><a href="#normalising-inputs-time-and-targets" id="toc-normalising-inputs-time-and-targets" class="nav-link" data-scroll-target="#normalising-inputs-time-and-targets">Normalising inputs, time and targets</a></li>
   <li><a href="#scopelimitations-of-neural-odes" id="toc-scopelimitations-of-neural-odes" class="nav-link" data-scroll-target="#scopelimitations-of-neural-odes">Scope/Limitations of Neural ODEs</a></li>
   </ul></li>
   </ul>
@@ -500,98 +503,143 @@ X(t_k) = X(0) + \int_{0}^{t_k} f(X(s), s, \theta) ds
 </tbody>
 </table>
 </section>
-<section id="a-simple-example-of-a-neural-ode" class="level2">
-<h2 class="anchored" data-anchor-id="a-simple-example-of-a-neural-ode">A simple example of a Neural ODE</h2>
-<section id="breathing-ellipse-example" class="level3">
-<h3 class="anchored" data-anchor-id="breathing-ellipse-example">Breathing Ellipse Example</h3>
-<p>Let’s build a model that learns velocity field that governs the motion of points on a 2D curve such that the overall shape follows a specific geometric evolution. In this example, we will use a simple ellipse that expands and contracts over time, simulating a breathing motion whose aspect ratio changes according to the following function:</p>
+<section id="normalising-inputs-time-and-targets" class="level2">
+<h2 class="anchored" data-anchor-id="normalising-inputs-time-and-targets">Normalising inputs, time and targets</h2>
+<p>Neural ODEs can be sensitive to the scale of the inputs and targets, as in the case of any machine learning model. Normalizing the inputs and targets can help improve the training stability and convergence of the model. For example, if we use standardization:</p>
+<p>with standardisation,</p>
 <p><span class="math display">\[
+\begin{align}
+\mathbf{\tilde{X}} &amp;= \frac{\mathbf{X} - \mu_{\mathbf{X}}}{\sigma_{\mathbf{X}}}
+\quad \rightarrow \quad \mathbf{X} = \sigma_{\mathbf{X}} \mathbf{\tilde{X}} + \mu_{\mathbf{X}} \\
+\mathbf{\tilde{t}} &amp;= \frac{\mathbf{t} - \mathbf{t}_{\text{min}}}{\mathbf{t}_{\text{max}} - \mathbf{t}_{\text{min}}} \quad \rightarrow \quad \mathbf{t} = \mathbf{t}_{\text{min}} + \mathbf{\tilde{t}} (\mathbf{t}_{\text{max}} - \mathbf{t}_{\text{min}})
+\end{align}
+\]</span></p>
+<p>With these transformations, the ODE can be rewritten as:</p>
+<p><span class="math display">\[
+\begin{align}
+\frac{d\mathbf{X}}{dt} &amp;= f_{\theta} \left( \mathbf{X}, \mathbf{t} \right) \\
+\rightarrow \frac{\sigma_{\mathbf{X}}}{\mathbf{t}_{\text{max}} - \mathbf{t}_{\text{min}}} \frac{d\mathbf{\tilde{X}}}{d{\mathbf{\tilde{t}}}} &amp;= f_{\theta} \left( \sigma_{\mathbf{X}} \mathbf{\tilde{X}} + \mu_{\mathbf{X}}, \sigma_{\mathbf{t}} \mathbf{\tilde{t}} + \mu_{\mathbf{t}} \right) \\
+\rightarrow \frac{d\mathbf{\tilde{X}}}{d{\mathbf{\tilde{t}}}} &amp;= \frac{\mathbf{t}_{\text{max}} - \mathbf{t}_{\text{min}}}{\sigma_{\mathbf{X}}} f_{\theta} \left( \sigma_{\mathbf{X}} \mathbf{\tilde{X}} + \mu_{\mathbf{X}}, \sigma_{\mathbf{t}} \mathbf{\tilde{t}} + \mu_{\mathbf{t}} \right) \\
+\rightarrow \frac{d\mathbf{\tilde{X}}}{d{\mathbf{\tilde{t}}}} &amp;= \frac{\mathbf{t}_{\text{max}} - \mathbf{t}_{\text{min}}}{\sigma_{\mathbf{X}}} f_{\theta} \left(\mathbf{X}, \mathbf{t} \right) \\
+\rightarrow \frac{d\mathbf{\tilde{X}}}{ d{\mathbf{\tilde{t}}} } &amp;= \tilde{f}_{\theta} \left( \mathbf{\tilde{X}}, \mathbf{\tilde{t}} \right)
+\end{align} \\
+\]</span></p>
+<p>and,</p>
+<p><span class="math display">\[
+\frac{dX}{dt} = \frac{\sigma_{\mathbf{X}}}{\mathbf{t}_{\text{max}} - \mathbf{t}_{\text{min}}}\frac{d\mathbf{\tilde{X}}}{d{\mathbf{\tilde{t}}}}
+\]</span></p>
+<p>From above equations,</p>
+<ul>
+<li>If the network <span class="math inline">\(f_{\theta}\)</span> is trained on the original data, then its output should be scaled by the factor <span class="math inline">\({(\mathbf{t}_{\text{max}} - \mathbf{t}_{\text{min}})}/{\sigma_{\mathbf{X}}}\)</span> before passing it to the ODE solver. Then, the output of the ODE solver will be in the normalized space, and we can transform it back to the original space using the inverse of the normalization transformation.</li>
+<li>Otherwise, <em>even better</em>, if the network <span class="math inline">\(f_{\theta}\)</span> is trained on the normalized data, then it can be directly used in the ODE solver without any scaling, as it already represents the dynamics in the normalized space. Then, the output of the ODE solver will be in the normalized space, and we can transform it back to the original space using the inverse of the normalization transformation.</li>
+</ul>
+<p>So, in summary, adopting the second approach:</p>
+<ol type="1">
+<li><strong>Normalize</strong> the <em>input</em> (i.e., the initial state of the system), <em>time</em> and <em>target trajectory</em> (i.e., the observed states at different time steps) using standardization or any other normalization technique.</li>
+<li><strong>ODESolver</strong> takes the normalised input and time, along with the neural network <span class="math inline">\(\tilde{f}_{\theta}\)</span> (where we do not scale the output of the network), to compute the predicted states at different time steps in the normalized space.</li>
+<li><strong>Train</strong> the model with the loss computed in the normalized space.</li>
+<li>During <strong>inference</strong>, we can pass the trained model along with given initial state and future time values in the same normalised scale (i.e., for example to zero mean and unit variance, if standardization is used during training), to the ODE solver to compute the predicted states in the normalized space. Finally, transform the predicted states back to the original space using the inverse of the normalization transformation.</li>
+</ol>
+<!-- 
+## A simple example of a Neural ODE
+### Breathing Ellipse Example
+
+Let's build a model that learns velocity field that governs the motion of points on a 2D curve such that the overall shape follows a specific geometric evolution. In this example, we will use a simple ellipse that expands and contracts over time, simulating a breathing motion whose aspect ratio changes according to the following function:
+
+$$
 \beta(t) = \frac{1}{2}\left[(\beta_0 + \frac{1}{\beta_0}) + (\beta_0 - \frac{1}{\beta_0})\cos(\frac{\pi t}{T}) \right]; \quad t = 0, 1, ..., T \\
-\]</span></p>
-<section id="assumptions" class="level4">
-<h4 class="anchored" data-anchor-id="assumptions">Assumptions</h4>
-<ul>
-<li><strong>Initial state</strong> (<span class="math inline">\(t=0\)</span>): An ellipse with aspect ratio <span class="math inline">\(\beta_0\)</span></li>
-<li><strong>Intermediate states</strong>: We have the observations of the curve at different time steps, possibly at irregular intervals. We want to learn the underlying velocity field that governs this motion.</li>
-<li><strong>Final state</strong> (<span class="math inline">\(t=T\)</span>): The ellipse reaches opposite aspect ratio <span class="math inline">\(\beta_T = 1/\beta_0\)</span>.</li>
-<li>The area of the ellipse is conserved over time.</li>
-<li>Each point on the curve maps to a new position at each time step, following the velocity field defined by the Neural ODE.</li>
-</ul>
-</section>
-<section id="expected-results" class="level4">
-<h4 class="anchored" data-anchor-id="expected-results">Expected Results</h4>
-<ul>
-<li>Non-autonomous vector field (explicit time dependence) that governs the motion of points on the curve.</li>
-<li>Conservation of topology (no crossing of trajectories)</li>
-<li>Resolution invariance (the same curve should be obtained regardless of the number of points sampled on the curve)</li>
-</ul>
-</section>
-<section id="implementation-in-pytorch" class="level4">
-<h4 class="anchored" data-anchor-id="implementation-in-pytorch">Implementation in PyTorch</h4>
-<ul>
-<li>Define a neural network to find the function <span class="math inline">\(f_{\theta}(X, t):\mathbb{R}^2 \times \mathbb{R} \rightarrow \mathbb{R}^2\)</span>, that determines the velocity field.</li>
-<li>This leads to the ODE: <span class="math inline">\(\frac{dX}{dt} = f_{\theta}(X, t)\)</span>, where <span class="math inline">\(X\)</span> is the set of points on the curve.</li>
-<li>Use an ODE solver (e.g., <code>torchdiffeq.odeint</code>) to compute the output <span class="math inline">\(X(T)\)</span> from the input <span class="math inline">\(X(0)\)</span>.</li>
-<li>Loss function: Mean squared error between the predicted curve at time <span class="math inline">\(T\)</span> and the true curve at time <span class="math inline">\(T\)</span>.</li>
-</ul>
-<p><span class="math display">\[
+$$
+
+#### Assumptions
+
+- **Initial state** ($t=0$): An ellipse with aspect ratio $\beta_0$
+- **Intermediate states**: We have the observations of the curve at different time steps, possibly at irregular intervals. We want to learn the underlying velocity field that governs this motion.
+- **Final state** ($t=T$): The ellipse reaches opposite aspect ratio $\beta_T = 1/\beta_0$.
+- The area of the ellipse is conserved over time.
+- Each point on the curve maps to a new position at each time step, following the velocity field defined by the Neural ODE.
+
+#### Expected Results
+
+- Non-autonomous vector field (explicit time dependence) that governs the motion of points on the curve.
+- Conservation of topology (no crossing of trajectories)
+- Resolution invariance (the same curve should be obtained regardless of the number of points sampled on the curve)
+
+#### Implementation in PyTorch
+
+- Define a neural network to find the function $f_{\theta}(X, t):\mathbb{R}^2 \times \mathbb{R} \rightarrow \mathbb{R}^2$, that determines the velocity field.
+- This leads to the ODE: $\frac{dX}{dt} = f_{\theta}(X, t)$, where $X$ is the set of points on the curve.
+- Use an ODE solver (e.g., `torchdiffeq.odeint`) to compute the output $X(T)$ from the input $X(0)$.
+- Loss function: Mean squared error between the predicted curve at time $T$ and the true curve at time $T$.
+
+$$
 \mathcal{L}(\theta) = \frac{1}{NK} \sum_{i=1}^{N} \sum_{k=1}^{K} \| X_i^{\theta}(t_k) - X_i^{\text{true}}(t_k) \|^2
-\]</span></p>
-</section>
-<section id="appendix-derivation-of-velocity-field" class="level4">
-<h4 class="anchored" data-anchor-id="appendix-derivation-of-velocity-field">Appendix: Derivation of velocity field</h4>
-<p><span class="math display">\[
+$$
+
+#### Appendix: Derivation of velocity field
+
+$$
 \dfrac{x^2}{a(t)^2} + \dfrac{y^2}{b(t)^2} = 1 \\
-\]</span></p>
-<p>Assuming the ellipse is centered at the origin, parametrized by the angle <span class="math inline">\(\theta \in [0, 2\pi)\)</span>, the coordinates of points on the ellipse can be expressed as:</p>
-<p><span class="math display">\[
+$$
+
+Assuming the ellipse is centered at the origin, parametrized by the angle $\theta \in [0, 2\pi)$, the coordinates of points on the ellipse can be expressed as:
+
+$$
 x(t, \theta) = a(t) \cos{\theta} \\
 y(t, \theta) = b(t) \sin{\theta}
-\]</span></p>
-<p>Where <span class="math inline">\(a(t)\)</span> and <span class="math inline">\(b(t)\)</span> are the semi-major and semi-minor axes of the ellipse at time <span class="math inline">\(t\)</span>. The aspect ratio <span class="math inline">\(\beta(t)\)</span> is defined as:</p>
-<p><span class="math display">\[
+$$
+
+Where $a(t)$ and $b(t)$ are the semi-major and semi-minor axes of the ellipse at time $t$. The aspect ratio $\beta(t)$ is defined as:
+
+$$
 \beta(t) = \frac{a(t)}{b(t)} \\
 \beta(0) = \beta_0 \\
 \beta(T) = \frac{1}{\beta_0}
-\]</span></p>
-<p>As the area of the ellipse is conserved, we have:</p>
-<p><span class="math display">\[
+$$
+
+As the area of the ellipse is conserved, we have:
+
+$$
 \begin{align*}
-A &amp;= \pi a(t) b(t) = \text{constant} \\
-\Rightarrow a(t) b(t) &amp;= A / \pi = \xi ^ 2 \\
-\Rightarrow a(t) &amp;= \xi \sqrt{\beta(t)} \\
-\Rightarrow b(t) &amp;= \frac{\xi}{\sqrt{\beta(t)}} \\
-x(t, \theta) &amp;= \xi \sqrt{\beta(t)} \cos{\theta} \\
-y(t, \theta) &amp;= \frac{\xi}{\sqrt{\beta(t)}} \sin{\theta} \\
+A &= \pi a(t) b(t) = \text{constant} \\
+\Rightarrow a(t) b(t) &= A / \pi = \xi ^ 2 \\
+\Rightarrow a(t) &= \xi \sqrt{\beta(t)} \\
+\Rightarrow b(t) &= \frac{\xi}{\sqrt{\beta(t)}} \\
+x(t, \theta) &= \xi \sqrt{\beta(t)} \cos{\theta} \\
+y(t, \theta) &= \frac{\xi}{\sqrt{\beta(t)}} \sin{\theta} \\
 \end{align*}
-\]</span></p>
-<p>Differentiating the coordinates with respect to time to get the velocity field:</p>
-<p><span class="math display">\[
+$$
+
+Differentiating the coordinates with respect to time to get the velocity field:
+
+$$
 \begin{align*}
-\frac{dx}{dt} &amp;= \frac{d}{dt} (\xi \sqrt{\beta(t)} \cos{\theta}) \\
-&amp;= \xi \cos{\theta} \frac{d}{dt} \sqrt{\beta(t)} \\
-&amp;= \frac{\xi}{2} \cos{\theta} \frac{\beta'(t)}{\sqrt{\beta(t)}} \\
-\Rightarrow \frac{dx}{dt} &amp;= \frac{x}{2} \frac{\beta'(t)}{\beta(t)} \\
+\frac{dx}{dt} &= \frac{d}{dt} (\xi \sqrt{\beta(t)} \cos{\theta}) \\
+&= \xi \cos{\theta} \frac{d}{dt} \sqrt{\beta(t)} \\
+&= \frac{\xi}{2} \cos{\theta} \frac{\beta'(t)}{\sqrt{\beta(t)}} \\
+\Rightarrow \frac{dx}{dt} &= \frac{x}{2} \frac{\beta'(t)}{\beta(t)} \\
 \end{align*}
-\]</span></p>
-<p>Similarly for <span class="math inline">\(y\)</span>:</p>
-<p><span class="math display">\[
+$$
+
+Similarly for $y$:
+
+$$
 \begin{align*}
-\frac{dy}{dt} &amp;= \frac{d}{dt} \left( \frac{\xi}{\sqrt{\beta(t)}} \sin{\theta} \right) \\
-&amp;= -\frac{\xi}{2} \sin{\theta} \frac{\beta'(t)}{\beta(t)\sqrt{\beta(t)}} \\
-\Rightarrow \frac{dy}{dt} &amp;= -\frac{y}{2} \frac{\beta'(t)}{\beta(t)}
+\frac{dy}{dt} &= \frac{d}{dt} \left( \frac{\xi}{\sqrt{\beta(t)}} \sin{\theta} \right) \\
+&= -\frac{\xi}{2} \sin{\theta} \frac{\beta'(t)}{\beta(t)\sqrt{\beta(t)}} \\
+\Rightarrow \frac{dy}{dt} &= -\frac{y}{2} \frac{\beta'(t)}{\beta(t)}
 \end{align*}
-\]</span></p>
-<p>Hence, the velocity field governing the motion of points on the curve can be expressed as:</p>
-<p><span class="math display">\[
+$$
+
+Hence, the velocity field governing the motion of points on the curve can be expressed as:
+
+$$
 \begin{align*}
-\frac{d}{dt} \begin{pmatrix} x \\ y \end{pmatrix} &amp;= \alpha(t) \begin{pmatrix} x \\ -y \end{pmatrix} \\
-&amp;= \frac{\beta'(t)}{2\beta(t)} \begin{pmatrix} x \\ -y \end{pmatrix}
+\frac{d}{dt} \begin{pmatrix} x \\ y \end{pmatrix} &= \alpha(t) \begin{pmatrix} x \\ -y \end{pmatrix} \\
+&= \frac{\beta'(t)}{2\beta(t)} \begin{pmatrix} x \\ -y \end{pmatrix}
 \end{align*}
-\]</span></p>
-<p>The neural ODE should learn this time-varying velocity field that governs the motion of points on the curve, allowing it to reconstruct the breathing ellipse dynamics from the observed data.</p>
-</section>
-</section>
+$$
+
+The neural ODE should learn this time-varying velocity field that governs the motion of points on the curve, allowing it to reconstruct the breathing ellipse dynamics from the observed data. -->
 </section>
 <section id="scopelimitations-of-neural-odes" class="level2">
 <h2 class="anchored" data-anchor-id="scopelimitations-of-neural-odes">Scope/Limitations of Neural ODEs</h2>
