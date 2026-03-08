@@ -46,8 +46,52 @@ According to the original paper:
 | Memory cost            | $O(L)$                                                 | $O(1)$, it just stores the current state and the end points of the integration interval |
 | Function $\mathcal{f}$ | represents transformation mapping from input to output | veclocity field that defines the dynamics of the system                                 |
 
-## A simple example of a Neural ODE
+## Normalising inputs, time and targets
 
+Neural ODEs can be sensitive to the scale of the inputs and targets, as in the case of any machine learning model. Normalizing the inputs and targets can help improve the training stability and convergence of the model. For example, if we use standardization:
+
+with standardisation,
+
+$$
+\begin{align}
+\mathbf{\tilde{X}} &= \frac{\mathbf{X} - \mu_{\mathbf{X}}}{\sigma_{\mathbf{X}}}
+\quad \rightarrow \quad \mathbf{X} = \sigma_{\mathbf{X}} \mathbf{\tilde{X}} + \mu_{\mathbf{X}} \\
+\mathbf{\tilde{t}} &= \frac{\mathbf{t} - \mathbf{t}_{\text{min}}}{\mathbf{t}_{\text{max}} - \mathbf{t}_{\text{min}}} \quad \rightarrow \quad \mathbf{t} = \mathbf{t}_{\text{min}} + \mathbf{\tilde{t}} (\mathbf{t}_{\text{max}} - \mathbf{t}_{\text{min}})
+\end{align}
+$$
+
+With these transformations, the ODE can be rewritten as:
+
+$$
+\begin{align}
+\frac{d\mathbf{X}}{dt} &= f_{\theta} \left( \mathbf{X}, \mathbf{t} \right) \\
+\rightarrow \frac{\sigma_{\mathbf{X}}}{\mathbf{t}_{\text{max}} - \mathbf{t}_{\text{min}}} \frac{d\mathbf{\tilde{X}}}{d{\mathbf{\tilde{t}}}} &= f_{\theta} \left( \sigma_{\mathbf{X}} \mathbf{\tilde{X}} + \mu_{\mathbf{X}}, \sigma_{\mathbf{t}} \mathbf{\tilde{t}} + \mu_{\mathbf{t}} \right) \\
+\rightarrow \frac{d\mathbf{\tilde{X}}}{d{\mathbf{\tilde{t}}}} &= \frac{\mathbf{t}_{\text{max}} - \mathbf{t}_{\text{min}}}{\sigma_{\mathbf{X}}} f_{\theta} \left( \sigma_{\mathbf{X}} \mathbf{\tilde{X}} + \mu_{\mathbf{X}}, \sigma_{\mathbf{t}} \mathbf{\tilde{t}} + \mu_{\mathbf{t}} \right) \\
+\rightarrow \frac{d\mathbf{\tilde{X}}}{d{\mathbf{\tilde{t}}}} &= \frac{\mathbf{t}_{\text{max}} - \mathbf{t}_{\text{min}}}{\sigma_{\mathbf{X}}} f_{\theta} \left(\mathbf{X}, \mathbf{t} \right) \\
+\rightarrow \frac{d\mathbf{\tilde{X}}}{ d{\mathbf{\tilde{t}}} } &= \tilde{f}_{\theta} \left( \mathbf{\tilde{X}}, \mathbf{\tilde{t}} \right)
+\end{align} \\
+$$
+
+and,
+
+$$
+\frac{dX}{dt} = \frac{\sigma_{\mathbf{X}}}{\mathbf{t}_{\text{max}} - \mathbf{t}_{\text{min}}}\frac{d\mathbf{\tilde{X}}}{d{\mathbf{\tilde{t}}}}
+$$
+
+From above equations,
+
+- If the network $f_{\theta}$ is trained on the original data, then its output should be scaled by the factor ${(\mathbf{t}_{\text{max}} - \mathbf{t}_{\text{min}})}/{\sigma_{\mathbf{X}}}$ before passing it to the ODE solver. Then, the output of the ODE solver will be in the normalized space, and we can transform it back to the original space using the inverse of the normalization transformation.
+- Otherwise, *even better*, if the network $f_{\theta}$ is trained on the normalized data, then it can be directly used in the ODE solver without any scaling, as it already represents the dynamics in the normalized space. Then, the output of the ODE solver will be in the normalized space, and we can transform it back to the original space using the inverse of the normalization transformation.
+
+So, in summary, adopting the second approach:
+
+1. **Normalize** the *input* (i.e., the initial state of the system), *time* and *target trajectory* (i.e., the observed states at different time steps) using standardization or any other normalization technique.
+2. **ODESolver** takes the normalised input and time, along with the neural network $\tilde{f}_{\theta}$ (where we do not scale the output of the network), to compute the predicted states at different time steps in the normalized space.
+3. **Train** the model with the loss computed in the normalized space.
+4. During **inference**, we can pass the trained model along with given initial state and future time values in the same normalised scale (i.e., for example to zero mean and unit variance, if standardization is used during training), to the ODE solver to compute the predicted states in the normalized space. Finally, transform the predicted states back to the original space using the inverse of the normalization transformation.
+
+<!-- 
+## A simple example of a Neural ODE
 ### Breathing Ellipse Example
 
 Let's build a model that learns velocity field that governs the motion of points on a 2D curve such that the overall shape follows a specific geometric evolution. In this example, we will use a simple ellipse that expands and contracts over time, simulating a breathing motion whose aspect ratio changes according to the following function:
@@ -145,7 +189,7 @@ $$
 \end{align*}
 $$
 
-The neural ODE should learn this time-varying velocity field that governs the motion of points on the curve, allowing it to reconstruct the breathing ellipse dynamics from the observed data.
+The neural ODE should learn this time-varying velocity field that governs the motion of points on the curve, allowing it to reconstruct the breathing ellipse dynamics from the observed data. -->
 
 ## Scope/Limitations of Neural ODEs
 
