@@ -28,9 +28,14 @@ website:
   sidebar:
     style: "docked"
     search: true            # This adds a search bar automatically!
+    collapse-level: 2  # Shows the first two levels, collapses the rest
     contents:
-      - section: "Machine Learning"
-        contents: src/machine_learning/*
+      - section: "Deep Learning"
+        contents:
+          - section: Neural ODEs
+            contents: src/machine_learning/neural_ode/*
+          - section: "Graph Neural Networks"
+            contents: src/machine_learning/gnns/*
       - section: "Uncertainty Quantifcation"
         contents: src/uq/*
       - notes.md
